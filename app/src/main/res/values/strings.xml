@@ -1,0 +1,18 @@
+<resources>
+    <!-- Strings do aplicativo TaskFlow -->
+    <string name="app_name">TaskFlow</string>
+    <string name="login_title">Bem-vindo ao TaskFlow</string>
+    <string name="login_subtitle">Organize suas tarefas com eficiência</string>
+    <string name="enter_your_name">Digite seu nome</string>
+    <string name="start">Começar</string>
+    <string name="my_tasks">Minhas Tarefas</string>
+    <string name="add_task">Adicionar Tarefa</string>
+    <string name="task_hint">Digite sua tarefa...</string>
+    <string name="all_tasks">Todas</string>
+    <string name="pending_tasks">Abertas</string>
+    <string name="completed_tasks">Concluídas</string>
+    <string name="no_tasks">Nenhuma tarefa encontrada</string>
+    <string name="total_tasks">Total</string>
+    <string name="pending">Pendentes</string>
+    <string name="completed">Concluídas</string>
+</resources>

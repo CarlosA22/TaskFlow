@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- TaskFlow Colors -->
+    <color name="taskflow_primary">#6366F1</color>
+    <color name="taskflow_primary_dark">#4338CA</color>
+    <color name="taskflow_green">#10B981</color>
+
+    <!-- Standard Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+</resources>
