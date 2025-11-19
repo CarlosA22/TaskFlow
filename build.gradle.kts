@@ -3,7 +3,7 @@
 // Configurações do projeto raiz
 plugins {
     // Plugin do Android Gradle aplicado mas não configurado aqui
-    id("com.android.application") version "8.5.2" apply false
+    id("com.android.application") version "8.13.1" apply false
     // Plugin do Kotlin aplicado mas não configurado aqui
     id("org.jetbrains.kotlin.android") version "2.0.20" apply false
     // Plugin KSP para Room (substituto do KAPT)
