@@ -4,6 +4,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -107,6 +108,7 @@ dependencies {
     // Room - banco de dados local
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
+    implementation(libs.firebase.database)
     // Anotações do Room processadas pelo KSP
     ksp("androidx.room:room-compiler:2.6.1")
 
