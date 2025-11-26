@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -12,7 +12,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.taskflow.app.R
+import com.taskflow.app.ui.viewmodel.LoginViewModel
 
 /**
  * Tela de login/boas-vindas do TaskFlow
@@ -25,17 +27,10 @@ import com.taskflow.app.R
 @Composable
 fun LoginScreen(
     onLoginSuccess: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    loginViewModel: LoginViewModel = viewModel()
 ) {
-    // Estado para armazenar o nome digitado pelo usuário
-    var userName by remember { mutableStateOf("") }
-    // Estado para controlar se o botão deve estar habilitado
-    var isButtonEnabled by remember { mutableStateOf(false) }
-
-    // Atualizar estado do botão quando nome mudar
-    LaunchedEffect(userName) {
-        isButtonEnabled = userName.trim().isNotEmpty()
-    }
+    val uiState = loginViewModel.uiState
 
     // Layout principal centralizado
     Box(
@@ -84,8 +79,8 @@ fun LoginScreen(
                 ) {
                     // Campo de entrada do nome
                     OutlinedTextField(
-                        value = userName,
-                        onValueChange = { userName = it },
+                        value = uiState.userName,
+                        onValueChange = { loginViewModel.updateUserName(it) },
                         label = {
                             Text(stringResource(id = R.string.enter_your_name))
                         },
@@ -101,8 +96,8 @@ fun LoginScreen(
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 // Executar login quando pressionar Done no teclado
-                                if (isButtonEnabled) {
-                                    onLoginSuccess(userName.trim())
+                                if (uiState.isLoginEnabled) {
+                                    onLoginSuccess(uiState.userName.trim())
                                 }
                             }
                         )
@@ -112,8 +107,8 @@ fun LoginScreen(
 
                     // Botão para começar
                     Button(
-                        onClick = { onLoginSuccess(userName.trim()) },
-                        enabled = isButtonEnabled,
+                        onClick = { onLoginSuccess(uiState.userName.trim()) },
+                        enabled = uiState.isLoginEnabled,
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary

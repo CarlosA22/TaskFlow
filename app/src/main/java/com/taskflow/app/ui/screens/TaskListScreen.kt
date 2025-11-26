@@ -23,31 +23,22 @@ import com.taskflow.app.R
 import com.taskflow.app.TaskFlowApplication
 import com.taskflow.app.ui.components.TaskItem
 import com.taskflow.app.ui.components.TaskStatsBar
-import com.taskflow.app.viewmodel.TaskFilter
-import com.taskflow.app.viewmodel.TaskViewModel
-import com.taskflow.app.viewmodel.TaskViewModelFactory
+import com.taskflow.app.ui.viewmodel.TaskFilter
+import com.taskflow.app.ui.viewmodel.TaskViewModel
+import com.taskflow.app.ui.viewmodel.TaskViewModelFactory
 
-/**
- * Tela principal do aplicativo que exibe a lista de tarefas
- * Inclui campo para adicionar novas tarefas, filtros e estatísticas
- *
- * @param userName Nome do usuário logado
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskListScreen(
     userName: String,
     modifier: Modifier = Modifier
 ) {
-    // Obter dependências da aplicação
     val application = androidx.compose.ui.platform.LocalContext.current.applicationContext as TaskFlowApplication
 
-    // Criar ViewModel com factory personalizada
     val viewModel: TaskViewModel = viewModel(
         factory = TaskViewModelFactory(application.repository)
     )
 
-    // Estados observados do ViewModel
     val filteredTasks by viewModel.filteredTasks.collectAsStateWithLifecycle(emptyList())
     val currentFilter by viewModel.currentFilter.collectAsStateWithLifecycle()
     val totalTasksCount by viewModel.totalTasksCount.collectAsStateWithLifecycle(0)
@@ -55,14 +46,11 @@ fun TaskListScreen(
     val completedTasksCount by viewModel.completedTasksCount.collectAsStateWithLifecycle(0)
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
-    // Estados locais da UI
     var newTaskText by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    // Layout principal com Scaffold para estrutura padrão do Material 3
     Scaffold(
         topBar = {
-            // Barra superior com saudação
             TopAppBar(
                 title = {
                     Column {
@@ -84,7 +72,6 @@ fun TaskListScreen(
             )
         },
         floatingActionButton = {
-            // Botão flutuante para adicionar nova tarefa
             FloatingActionButton(
                 onClick = {
                     if (newTaskText.isNotBlank()) {
@@ -111,7 +98,6 @@ fun TaskListScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Barra de estatísticas
             TaskStatsBar(
                 totalTasks = totalTasksCount,
                 pendingTasks = pendingTasksCount,
@@ -120,7 +106,6 @@ fun TaskListScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo para adicionar nova tarefa
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -176,7 +161,6 @@ fun TaskListScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Filtros de tarefas
             TaskFilterChips(
                 currentFilter = currentFilter,
                 onFilterChange = { viewModel.setFilter(it) }
@@ -184,9 +168,7 @@ fun TaskListScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Lista de tarefas ou estado vazio
             if (isLoading) {
-                // Indicador de carregamento
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -198,10 +180,8 @@ fun TaskListScreen(
                     )
                 }
             } else if (filteredTasks.isEmpty()) {
-                // Estado vazio
                 EmptyTasksState(currentFilter = currentFilter)
             } else {
-                // Lista com tarefas
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
@@ -217,7 +197,6 @@ fun TaskListScreen(
                         )
                     }
 
-                    // Espaço extra no final para o FAB não sobrepor
                     item {
                         Spacer(modifier = Modifier.height(80.dp))
                     }
@@ -227,10 +206,6 @@ fun TaskListScreen(
     }
 }
 
-/**
- * Componente com chips para filtrar tarefas
- * Permite alternar entre Todas, Pendentes e Concluídas
- */
 @Composable
 private fun TaskFilterChips(
     currentFilter: TaskFilter,
@@ -241,7 +216,6 @@ private fun TaskFilterChips(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Filtro: Todas as tarefas
         FilterChip(
             selected = currentFilter == TaskFilter.ALL,
             onClick = { onFilterChange(TaskFilter.ALL) },
@@ -252,7 +226,6 @@ private fun TaskFilterChips(
             )
         )
 
-        // Filtro: Tarefas pendentes
         FilterChip(
             selected = currentFilter == TaskFilter.PENDING,
             onClick = { onFilterChange(TaskFilter.PENDING) },
@@ -263,7 +236,6 @@ private fun TaskFilterChips(
             )
         )
 
-        // Filtro: Tarefas concluídas
         FilterChip(
             selected = currentFilter == TaskFilter.COMPLETED,
             onClick = { onFilterChange(TaskFilter.COMPLETED) },
@@ -276,16 +248,11 @@ private fun TaskFilterChips(
     }
 }
 
-/**
- * Componente que exibe estado vazio quando não há tarefas
- * Mostra mensagens diferentes baseadas no filtro atual
- */
 @Composable
 private fun EmptyTasksState(
     currentFilter: TaskFilter,
     modifier: Modifier = Modifier
 ) {
-    // Determinar mensagem baseada no filtro
     val message = when (currentFilter) {
         TaskFilter.ALL -> "Nenhuma tarefa criada ainda.\nAdicione sua primeira tarefa!"
         TaskFilter.PENDING -> "Nenhuma tarefa pendente.\nParabéns! Você está em dia!"
@@ -302,14 +269,12 @@ private fun EmptyTasksState(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Ícone ilustrativo
             Text(
                 text = "📝",
                 style = MaterialTheme.typography.displayLarge,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Mensagem explicativa
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyLarge,
