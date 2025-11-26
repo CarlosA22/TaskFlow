@@ -83,6 +83,10 @@ android {
 }
 
 dependencies {
+    // BOM do Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation("com.google.firebase:firebase-firestore-ktx")
+
     // BOM do Compose - gerencia versões de todas as libs Compose
     implementation(platform("androidx.compose:compose-bom:2024.09.03"))
 
@@ -108,7 +112,6 @@ dependencies {
     // Room - banco de dados local
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    implementation(libs.firebase.database)
     // Anotações do Room processadas pelo KSP
     ksp("androidx.room:room-compiler:2.6.1")
 

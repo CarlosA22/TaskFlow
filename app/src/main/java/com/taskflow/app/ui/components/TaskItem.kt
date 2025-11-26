@@ -17,21 +17,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import com.taskflow.app.data.Task
+import com.taskflow.app.data.model.Task
 import com.taskflow.app.ui.theme.TaskCompletedGreen
 import com.taskflow.app.ui.theme.TaskDeleteRed
 import java.text.SimpleDateFormat
 import java.util.*
 
-/**
- * Componente que representa um item de tarefa individual
- * Inclui checkbox, texto, data de criação e botão de delete
- * Com animações para melhorar a experiência do usuário
- *
- * @param task Objeto Task com os dados da tarefa
- * @param onToggleComplete Callback para marcar/desmarcar como concluída
- * @param onDelete Callback para deletar a tarefa
- */
 @Composable
 fun TaskItem(
     task: Task,
@@ -39,7 +30,6 @@ fun TaskItem(
     onDelete: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Animação para tarefas concluídas (reduz opacidade)
     val alpha by animateFloatAsState(
         targetValue = if (task.isCompleted) 0.6f else 1f,
         animationSpec = spring(
@@ -49,7 +39,6 @@ fun TaskItem(
         label = "TaskItemAlpha"
     )
 
-    // Card principal do item de tarefa
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -70,12 +59,10 @@ fun TaskItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Lado esquerdo: Checkbox e conteúdo da tarefa
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.weight(1f)
             ) {
-                // Checkbox para marcar tarefa como concluída
                 Checkbox(
                     checked = task.isCompleted,
                     onCheckedChange = { onToggleComplete(task) },
@@ -87,11 +74,9 @@ fun TaskItem(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                // Coluna com título e data da tarefa
                 Column(
                     modifier = Modifier.clickable { onToggleComplete(task) }
                 ) {
-                    // Título da tarefa
                     Text(
                         text = task.title,
                         style = MaterialTheme.typography.bodyLarge,
@@ -102,18 +87,9 @@ fun TaskItem(
                             TextDecoration.None
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    // Data de criação formatada
-                    Text(
-                        text = formatDate(task.createdAt),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
 
-            // Lado direito: Botão de delete
             IconButton(
                 onClick = { onDelete(task) },
                 colors = IconButtonDefaults.iconButtonColors(
@@ -128,15 +104,4 @@ fun TaskItem(
             }
         }
     }
-}
-
-/**
- * Função utilitária para formatar timestamp em data legível
- * @param timestamp Timestamp em milissegundos
- * @return String formatada da data (ex: "15/09/2025 14:30")
- */
-private fun formatDate(timestamp: Long): String {
-    val date = Date(timestamp)
-    val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-    return formatter.format(date)
 }

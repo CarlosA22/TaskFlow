@@ -17,7 +17,7 @@ import androidx.room.RoomDatabase
  */
 @Database(
     entities = [Task::class, UserSession::class],
-    version = 2, // A versão foi incrementada para 2 para refletir a adição da entidade UserSession.
+    version = 3,
     exportSchema = false
 )
 abstract class TaskDatabase : RoomDatabase() {

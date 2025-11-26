@@ -13,41 +13,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.taskflow.app.R
-import com.taskflow.app.TaskFlowApplication
+import com.taskflow.app.data.model.Task
 import com.taskflow.app.ui.components.TaskItem
-import com.taskflow.app.ui.components.TaskStatsBar
-import com.taskflow.app.ui.viewmodel.TaskFilter
 import com.taskflow.app.ui.viewmodel.TaskViewModel
-import com.taskflow.app.ui.viewmodel.TaskViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskListScreen(
     userName: String,
+    taskViewModel: TaskViewModel,
     modifier: Modifier = Modifier
 ) {
-    val application = androidx.compose.ui.platform.LocalContext.current.applicationContext as TaskFlowApplication
-
-    val viewModel: TaskViewModel = viewModel(
-        factory = TaskViewModelFactory(application.taskRepository)
-    )
-
-    val filteredTasks by viewModel.filteredTasks.collectAsStateWithLifecycle(emptyList())
-    val currentFilter by viewModel.currentFilter.collectAsStateWithLifecycle()
-    val totalTasksCount by viewModel.totalTasksCount.collectAsStateWithLifecycle(0)
-    val pendingTasksCount by viewModel.pendingTasksCount.collectAsStateWithLifecycle(0)
-    val completedTasksCount by viewModel.completedTasksCount.collectAsStateWithLifecycle(0)
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-
+    val tasks by taskViewModel.tasks.collectAsStateWithLifecycle()
     var newTaskText by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(Unit) {
+        taskViewModel.refreshTasks()
+    }
 
     Scaffold(
         topBar = {
@@ -75,7 +63,7 @@ fun TaskListScreen(
             FloatingActionButton(
                 onClick = {
                     if (newTaskText.isNotBlank()) {
-                        viewModel.addTask(newTaskText)
+                        taskViewModel.addTask(newTaskText)
                         newTaskText = ""
                         keyboardController?.hide()
                     }
@@ -98,14 +86,6 @@ fun TaskListScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            TaskStatsBar(
-                totalTasks = totalTasksCount,
-                pendingTasks = pendingTasksCount,
-                completedTasks = completedTasksCount
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -125,7 +105,7 @@ fun TaskListScreen(
                         IconButton(
                             onClick = {
                                 if (newTaskText.isNotBlank()) {
-                                    viewModel.addTask(newTaskText)
+                                    taskViewModel.addTask(newTaskText)
                                     newTaskText = ""
                                     keyboardController?.hide()
                                 }
@@ -150,7 +130,7 @@ fun TaskListScreen(
                     keyboardActions = KeyboardActions(
                         onDone = {
                             if (newTaskText.isNotBlank()) {
-                                viewModel.addTask(newTaskText)
+                                taskViewModel.addTask(newTaskText)
                                 newTaskText = ""
                                 keyboardController?.hide()
                             }
@@ -161,39 +141,22 @@ fun TaskListScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TaskFilterChips(
-                currentFilter = currentFilter,
-                onFilterChange = { viewModel.setFilter(it) }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            } else if (filteredTasks.isEmpty()) {
-                EmptyTasksState(currentFilter = currentFilter)
+            if (tasks.isEmpty()) {
+                EmptyTasksState()
             } else {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     items(
-                        items = filteredTasks,
+                        items = tasks,
                         key = { task -> task.id }
-                    ) { task ->
+                    ) { taskEntity ->
+                        val task = Task(id = taskEntity.id, title = taskEntity.title, isCompleted = taskEntity.isCompleted)
                         TaskItem(
                             task = task,
-                            onToggleComplete = { viewModel.toggleTaskCompletion(it) },
-                            onDelete = { viewModel.deleteTask(it) }
+                            onToggleComplete = { taskViewModel.updateTask(it.copy(isCompleted = !it.isCompleted)) },
+                            onDelete = { taskViewModel.deleteTask(it) }
                         )
                     }
 
@@ -207,58 +170,9 @@ fun TaskListScreen(
 }
 
 @Composable
-private fun TaskFilterChips(
-    currentFilter: TaskFilter,
-    onFilterChange: (TaskFilter) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        FilterChip(
-            selected = currentFilter == TaskFilter.ALL,
-            onClick = { onFilterChange(TaskFilter.ALL) },
-            label = { Text(stringResource(id = R.string.all_tasks)) },
-            colors = FilterChipDefaults.filterChipColors(
-                selectedContainerColor = MaterialTheme.colorScheme.primary,
-                selectedLabelColor = MaterialTheme.colorScheme.onPrimary
-            )
-        )
-
-        FilterChip(
-            selected = currentFilter == TaskFilter.PENDING,
-            onClick = { onFilterChange(TaskFilter.PENDING) },
-            label = { Text(stringResource(id = R.string.pending_tasks)) },
-            colors = FilterChipDefaults.filterChipColors(
-                selectedContainerColor = com.taskflow.app.ui.theme.TaskPendingOrange,
-                selectedLabelColor = MaterialTheme.colorScheme.onPrimary
-            )
-        )
-
-        FilterChip(
-            selected = currentFilter == TaskFilter.COMPLETED,
-            onClick = { onFilterChange(TaskFilter.COMPLETED) },
-            label = { Text(stringResource(id = R.string.completed_tasks)) },
-            colors = FilterChipDefaults.filterChipColors(
-                selectedContainerColor = com.taskflow.app.ui.theme.TaskCompletedGreen,
-                selectedLabelColor = MaterialTheme.colorScheme.onPrimary
-            )
-        )
-    }
-}
-
-@Composable
 private fun EmptyTasksState(
-    currentFilter: TaskFilter,
     modifier: Modifier = Modifier
 ) {
-    val message = when (currentFilter) {
-        TaskFilter.ALL -> "Nenhuma tarefa criada ainda.\nAdicione sua primeira tarefa!"
-        TaskFilter.PENDING -> "Nenhuma tarefa pendente.\nParabéns! Você está em dia!"
-        TaskFilter.COMPLETED -> "Nenhuma tarefa concluída ainda.\nComplete algumas tarefas para vê-las aqui!"
-    }
-
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -276,7 +190,7 @@ private fun EmptyTasksState(
             )
 
             Text(
-                text = message,
+                text = "Nenhuma tarefa criada ainda.\nAdicione sua primeira tarefa!",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
