@@ -36,7 +36,7 @@ fun TaskListScreen(
     val application = androidx.compose.ui.platform.LocalContext.current.applicationContext as TaskFlowApplication
 
     val viewModel: TaskViewModel = viewModel(
-        factory = TaskViewModelFactory(application.repository)
+        factory = TaskViewModelFactory(application.taskRepository)
     )
 
     val filteredTasks by viewModel.filteredTasks.collectAsStateWithLifecycle(emptyList())
